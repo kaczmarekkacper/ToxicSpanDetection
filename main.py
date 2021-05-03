@@ -1,8 +1,6 @@
 # https://stackoverflow.com/questions/66149878/e053-could-not-read-config-cfg-resumeparser
-import random
-import statistics
-
 import configparser
+import numpy as np
 
 from data_manager import data_loader
 from painter import painter
@@ -32,8 +30,6 @@ def main():
     print('Training')
     for iteration in range(spacy_classifier.iteration + 1, spacy_classifier.iteration + epoch + 1):
         loss = spacy_classifier.train()
-        filename = spacy_classifier.get_filename()
-        serializer.save(spacy_classifier, filename)
 
         train_score = spacy_classifier.test(spacy_classifier.train_data)
         spacy_classifier.train_scores.append(train_score)
@@ -41,10 +37,20 @@ def main():
         test_score = spacy_classifier.test(spacy_classifier.test_data)
         spacy_classifier.test_scores.append(test_score)
 
+        filename = spacy_classifier.get_filename()
+        serializer.save(spacy_classifier, filename)
+
         print(f'Iteration nr {iteration}, train_score: {train_score}, test_score: {test_score}, losses : {loss}')
-    painter.draw_one_data_plot(spacy_classifier.losses, 'Loss funtion value', 'epoch', 'Loss value')
-    painter.draw_two_data_plot(spacy_classifier.train_scores, spacy_classifier.test_scores,
+    losses_running_mean = running_mean(spacy_classifier.losses, 10)
+    train_score_running_mean = running_mean(spacy_classifier.train_scores, 10)
+    test_score_running_mean = running_mean(spacy_classifier.test_scores, 10)
+    painter.draw_one_data_plot(losses_running_mean, 'Loss function value', 'epoch', 'Loss value')
+    painter.draw_two_data_plot(train_score_running_mean, test_score_running_mean,
                                'Comparison of train and test scores', 'epoch', 'score', ['train_data', 'test_data'])
+
+
+def running_mean(x, N):
+    return np.convolve(x, np.ones((N,)) / N, mode='valid')
 
 
 if __name__ == '__main__':

@@ -4,18 +4,15 @@ import numpy as np
 
 from data_manager import data_loader
 from painter import painter
-from spicy_toxic_detector import spicy_toxic_detector
+from models import spicy_toxic_detector
+from models import dict_toxic_detector
 from serializer import serializer
 
-
-def main():
-    print('Loading configurations')
-    config = configparser.ConfigParser()
-    config.read('configuration.config')
-    epoch = int(config['DEFAULT']['epoch'])
-    data_path = config['DEFAULT']['data_path']
-    load_save = config['DEFAULT']['load_save'] == "True"
-    load_filename = config['DEFAULT']['load_filename']
+def spicy_main(config):
+    epoch = int(config['SPICY']['epoch'])
+    data_path = config['SPICY']['data_path']
+    load_save = config['SPICY']['load_save'] == "True"
+    load_filename = config['SPICY']['load_filename']
     if load_save:
         spacy_classifier = serializer.load(load_filename)
     else:
@@ -47,6 +44,35 @@ def main():
     painter.draw_one_data_plot(losses_running_mean, 'Loss function value', 'epoch', 'Loss value')
     painter.draw_two_data_plot(train_score_running_mean, test_score_running_mean,
                                'Comparison of train and test scores', 'epoch', 'score', ['train_data', 'test_data'])
+
+def dict_main(config):
+    data_path = config['DICT']['data_path']
+    print('Loading training data')
+    train = data_loader.read_datafile(data_path + 'train.csv')
+
+    print('Loading test data')
+    test = data_loader.read_datafile(data_path + 'test.csv')
+
+
+    dict_model = dict_toxic_detector.DictToxicDetector(train, test)
+
+    print('Training')
+    dict_model.train()
+
+    print('Testing')
+    print(dict_model.test())
+
+
+
+def main():
+    print('Loading configurations')
+    config = configparser.ConfigParser()
+    config.read('configuration.config')
+    model = config['DEFAULT']['model']
+    if model == 'SPICY':
+        spicy_main(config)
+    elif model == 'DICT':
+        dict_main(config)
 
 
 def running_mean(x, N):

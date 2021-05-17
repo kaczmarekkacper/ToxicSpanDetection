@@ -20,7 +20,6 @@ class SpacyToxicDetector:
 
         self.spacy_classifier.begin_training()
 
-
     @staticmethod
     def __prepare_spicy():
         print('Configuring SpaCy')
@@ -91,7 +90,7 @@ class SpacyToxicDetector:
         return mean_score
 
     def save(self, path='copies/'):
-        file = open( path + 'SpaCy' + self.iteration + '.copy', 'w')
+        file = open(path + 'SpaCy' + self.iteration + '.copy', 'w')
         pickle.dump(self, file)
 
     def get_filename(self):

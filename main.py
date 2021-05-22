@@ -13,6 +13,7 @@ def spicy_main(config):
     data_path = config['SPICY']['data_path']
     load_save = config['SPICY']['load_save'] == "True"
     load_filename = config['SPICY']['load_filename']
+    dropout = float(config['SPICY']['dropout'])
     if load_save:
         spacy_classifier = serializer.load(load_filename)
     else:
@@ -22,7 +23,7 @@ def spicy_main(config):
         print('Loading test data')
         test = data_loader.read_datafile(data_path + 'test.csv')
 
-        spacy_classifier = spicy_toxic_detector.SpacyToxicDetector(train, test)
+        spacy_classifier = spicy_toxic_detector.SpacyToxicDetector(train, test, dropout)
 
     print('Training')
     for iteration in range(spacy_classifier.iteration + 1, spacy_classifier.iteration + epoch + 1):

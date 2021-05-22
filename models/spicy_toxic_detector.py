@@ -7,11 +7,12 @@ from loss_functions import f1
 
 
 class SpacyToxicDetector:
-    def __init__(self, train_data, test_data):
+    def __init__(self, train_data, test_data, dropout):
         self.spacy_classifier = self.__prepare_spicy()
         self.train_data = train_data
         self.train_data_prepared = self.__prepare_training_data()
         self.test_data = test_data
+        self.dropout = dropout
 
         self.train_scores = []
         self.test_scores = []
@@ -23,7 +24,7 @@ class SpacyToxicDetector:
     @staticmethod
     def __prepare_spicy():
         print('Configuring SpaCy')
-        nlp = spacy.load("en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm") # TODO spróbować en_core_web_md
         spicy = spacy.blank('en')
         spicy.vocab.strings.add('TOXIC')
         ner = nlp.create_pipe("ner")  # named entity recognition
@@ -72,7 +73,7 @@ class SpacyToxicDetector:
                 start=4.0, stop=32.0, compound=1.001))
         for batch in batches:
             texts, annotations = zip(*batch)
-            self.spacy_classifier.update(texts, annotations, drop=0.5, losses=losses)
+            self.spacy_classifier.update(texts, annotations, drop=self.dropout, losses=losses)
         self.losses.append(losses['ner'])
         self.iteration += 1
         return losses['ner']
@@ -94,4 +95,4 @@ class SpacyToxicDetector:
         pickle.dump(self, file)
 
     def get_filename(self):
-        return f'SpaCy{self.iteration}.copy'
+        return f'SpaCy{self.iteration}-dropout-{self.dropout}.copy'

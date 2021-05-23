@@ -2,6 +2,7 @@ import random
 import statistics
 import spacy
 import pickle
+from data_manager.data_loader import spans_to_ents
 
 from loss_functions import f1
 
@@ -44,26 +45,9 @@ class SpacyToxicDetector:
         training_data = []
         for n, (spans, text) in enumerate(self.train_data):
             doc = nlp(text)
-            ents = self.__spans_to_ents(doc, set(spans), 'TOXIC')
+            ents = spans_to_ents(doc, set(spans), 'TOXIC')
             training_data.append((doc.text, {'entities': ents}))
         return training_data
-
-    def __spans_to_ents(self, doc, spans, label):
-        started = False
-        left, right, ents = 0, 0, []
-        for x in doc:
-            if x.pos_ == 'SPACE':
-                continue
-            if spans.intersection(set(range(x.idx, x.idx + len(x.text)))):
-                if not started:
-                    left, started = x.idx, True
-                right = x.idx + len(x.text)
-            elif started:
-                ents.append((left, right, label))
-                started = False
-        if started:
-            ents.append((left, right, label))
-        return ents
 
     def train(self):
         random.shuffle(self.train_data_prepared)

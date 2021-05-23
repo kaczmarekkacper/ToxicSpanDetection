@@ -42,3 +42,20 @@ def fix_spans(spans, text, special_characters=SPECIAL_CHARACTERS):
         if end - begin > 1:
             cleaned.extend(range(begin, end + 1))
     return cleaned
+
+def spans_to_ents(doc, spans, label):
+    started = False
+    left, right, ents = 0, 0, []
+    for x in doc:
+        if x.pos_ == 'SPACE':
+            continue
+        if spans.intersection(set(range(x.idx, x.idx + len(x.text)))):
+            if not started:
+                left, started = x.idx, True
+            right = x.idx + len(x.text)
+        elif started:
+            ents.append((left, right, label))
+            started = False
+    if started:
+        ents.append((left, right, label))
+    return ents

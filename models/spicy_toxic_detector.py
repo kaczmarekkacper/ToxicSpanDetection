@@ -25,7 +25,8 @@ class SpacyToxicDetector:
     @staticmethod
     def __prepare_spicy():
         print('Configuring SpaCy')
-        nlp = spacy.load("en_core_web_sm") # TODO spróbować en_core_web_md
+        nlp = spacy.load("en_core_web_md")
+        # nlp = spacy.load("en_core_web_sm") # TODO spróbować en_core_web_md
         spicy = spacy.blank('en')
         spicy.vocab.strings.add('TOXIC')
         ner = nlp.create_pipe("ner")  # named entity recognition
